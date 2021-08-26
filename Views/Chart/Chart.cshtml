@@ -1,0 +1,99 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/excanvas/r3/excanvas.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/chart.js/0.2/Chart.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            LoadChart();
+            $("#ddlCountries").on("change", function () {
+                LoadChart();
+            });
+            $("#rblChartType input").on("click", function () {
+                LoadChart();
+            });
+            function LoadChart() {
+                var chartType = parseInt($("#rblChartType input:checked").val());
+                var obj = {};
+                obj.Name = $("#ddlCountries").val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Chart/AjaxMethod",
+                    data: JSON.stringify(obj),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "text",
+                    success: function (response) {
+                        $("#dvChart").html("");
+                        $("#dvLegend").html("");
+                        var data = eval(response);
+                        var el = document.createElement('canvas');
+                        $("#dvChart")[0].appendChild(el);
+
+                        if ($.browser.msie && $.browser.version == "8.0") {
+                            G_vmlCanvasManager.initElement(el);
+                        }
+                        var ctx = el.getContext('2d');
+                        switch (chartType) {
+                            case 1:
+                                new Chart(ctx).Pie(data);
+                                break;
+                            case 2:
+                                new Chart(ctx).Doughnut(data);
+                                break;
+                        }
+                        //for (var i = 0; i < data.length; i++) {
+                        //    var div = $("<div />");
+                        //    div.css("margin-bottom", "10px");
+                        //    div.html("<span style = 'display:inline-block;height:10px;width:10px;background-color:"
+                        //        + data[i].color + "'></span> " + data[i].text);
+                        //    $("#dvLegend").append(div);
+                        //}
+                    },
+                    failure: function (response) {
+                        alert('There was an error.');
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <table border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td>
+                Country:
+                <select id="ddlCountries">
+                    <option value="USA">USA</option>
+                    <option value="Germany">Germany</option>
+                    <option value="France">France</option>
+                    <option value="Brazil">Brazil</option>
+                </select>
+                <table id="rblChartType" border="0">
+                    <tr>
+                        <td><input type="radio" name="ChartType" value="1" checked="checked" />Bar</td>
+                        <td><input type="radio" name="ChartType" value="2" />Doughnut</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div id="dvChart">
+                </div>
+            </td>
+            <td>
+                <div id="dvLegend">
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
